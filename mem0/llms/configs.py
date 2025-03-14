@@ -13,6 +13,7 @@ class LlmConfig(BaseModel):
         if provider in (
             "openai",
             "ollama",
+            "llama_cpp",
             "anthropic",
             "groq",
             "together",

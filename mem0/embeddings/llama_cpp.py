@@ -6,38 +6,30 @@ from mem0.configs.embeddings.base import BaseEmbedderConfig
 from mem0.embeddings.base import EmbeddingBase
 
 try:
-    from ollama import Client
+    from llama_cpp import Llama
 except ImportError:
-    user_input = input("The 'llama cpp python' library is required. Install it now? [y/N]: ")
+    user_input = input("The 'llama-cpp-python' library is required. Install it now? [y/N]: ")
     if user_input.lower() == "y":
         try:
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "ollama"])
-            from ollama import Client
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "llama-cpp-python"])
+            from llama_cpp import Llama
         except subprocess.CalledProcessError:
-            print("Failed to install 'llama cpp python'. Please install it manually using 'pip install llama-cpp-python'.")
+            print("Failed to install 'llama-cpp-python'. Please install it manually using 'pip install llama-cpp-python'.")
             sys.exit(1)
     else:
         print("The required 'ollama' library is not installed.")
         sys.exit(1)
 
 
-class OllamaEmbedding(EmbeddingBase):
+class LlamaCppEmbedding(EmbeddingBase):
     def __init__(self, config: Optional[BaseEmbedderConfig] = None):
         super().__init__(config)
 
         self.config.model = self.config.model or "nomic-embed-text"
         self.config.embedding_dims = self.config.embedding_dims or 512
 
-        self.client = Client(host=self.config.ollama_base_url)
-        self._ensure_model_exists()
-
-    def _ensure_model_exists(self):
-        """
-        Ensure the specified model exists locally. If not, pull it from Ollama.
-        """
-        local_models = self.client.list()["models"]
-        if not any(model.get("name") == self.config.model for model in local_models):
-            self.client.pull(self.config.model)
+        # self.client = Client(host=self.config.ollama_base_url)
+        self.client = Llama(model_path=self.config.model, embedding=True, n_ctx=self.config.embedding_dims)
 
     def embed(self, text, memory_action: Optional[Literal["add", "search", "update"]] = None):
         """
@@ -49,5 +41,6 @@ class OllamaEmbedding(EmbeddingBase):
         Returns:
             list: The embedding vector.
         """
-        response = self.client.embeddings(model=self.config.model, prompt=text)
-        return response["embedding"]
+        response = self.client.create_embedding(input=text, model=self.config.model)
+
+        return response["data"][0]["embedding"]

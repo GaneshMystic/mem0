@@ -13,6 +13,7 @@ def load_class(class_type):
 class LlmFactory:
     provider_to_class = {
         "ollama": "mem0.llms.ollama.OllamaLLM",
+        "llama_cpp": "mem0.llms.llama_cpp.LlamaCppLLM",
         "openai": "mem0.llms.openai.OpenAILLM",
         "groq": "mem0.llms.groq.GroqLLM",
         "together": "mem0.llms.together.TogetherLLM",
@@ -42,6 +43,7 @@ class EmbedderFactory:
     provider_to_class = {
         "openai": "mem0.embeddings.openai.OpenAIEmbedding",
         "ollama": "mem0.embeddings.ollama.OllamaEmbedding",
+        "llama_cpp": "mem0.embeddings.llama_cpp.LlamaCppEmbedding",
         "huggingface": "mem0.embeddings.huggingface.HuggingFaceEmbedding",
         "azure_openai": "mem0.embeddings.azure_openai.AzureOpenAIEmbedding",
         "gemini": "mem0.embeddings.gemini.GoogleGenAIEmbedding",

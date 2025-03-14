@@ -31,6 +31,8 @@ class BaseLlmConfig(ABC):
         app_name: Optional[str] = None,
         # Ollama specific
         ollama_base_url: Optional[str] = None,
+        # llama cpp specific
+        llama_cpp_base_url: Optional[str] = None,
         # AzureOpenAI specific
         azure_kwargs: Optional[AzureConfig] = {},
         # AzureOpenAI specific
@@ -73,6 +75,8 @@ class BaseLlmConfig(ABC):
         :type app_name: Optional[str], optional
         :param ollama_base_url: The base URL of the LLM, defaults to None
         :type ollama_base_url: Optional[str], optional
+        :param llama_cpp_base_url: The base URL of the LLM, defaults to None
+        :type llama_cpp_base_url: Optional[str], optional
         :param openai_base_url: Openai base URL to be use, defaults to "https://api.openai.com/v1"
         :type openai_base_url: Optional[str], optional
         :param azure_kwargs: key-value arguments for the AzureOpenAI LLM model, defaults a dict inside init
@@ -107,6 +111,9 @@ class BaseLlmConfig(ABC):
 
         # Ollama specific
         self.ollama_base_url = ollama_base_url
+
+        #llama cpp specific
+        self.llama_cpp_base_url = llama_cpp_base_url
 
         # DeepSeek specific
         self.deepseek_base_url = deepseek_base_url

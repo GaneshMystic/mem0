@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional, Union
 import httpx
 
 from mem0.memory.setup import setup_config, get_user_id
-from mem0.memory.telemetry import capture_client_event
+# from mem0.memory.telemetry import capture_client_event
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +89,7 @@ class MemoryClient:
             timeout=300,
         )
         self.user_email = self._validate_api_key()
-        capture_client_event("client.init", self)
+        #capture_client_event("client.init", self)
 
     def _validate_api_key(self):
         """Validate the API key by making a test request."""
@@ -142,7 +142,7 @@ class MemoryClient:
         response.raise_for_status()
         if "metadata" in kwargs:
             del kwargs["metadata"]
-        capture_client_event("client.add", self, {"keys": list(kwargs.keys())})
+        #capture_client_event("client.add", self, {"keys": list(kwargs.keys())})
         return response.json()
 
     @api_error_handler
@@ -161,7 +161,7 @@ class MemoryClient:
         params = self._prepare_params()
         response = self.client.get(f"/v1/memories/{memory_id}/", params=params)
         response.raise_for_status()
-        capture_client_event("client.get", self, {"memory_id": memory_id})
+        #capture_client_event("client.get", self, {"memory_id": memory_id})
         return response.json()
 
     @api_error_handler
@@ -190,11 +190,11 @@ class MemoryClient:
         response.raise_for_status()
         if "metadata" in kwargs:
             del kwargs["metadata"]
-        capture_client_event(
-            "client.get_all",
-            self,
-            {"api_version": version, "keys": list(kwargs.keys())},
-        )
+        #capture_client_event(
+        #     "client.get_all",
+        #     self,
+        #     {"api_version": version, "keys": list(kwargs.keys())},
+        # )
         return response.json()
 
     @api_error_handler
@@ -219,7 +219,7 @@ class MemoryClient:
         response.raise_for_status()
         if "metadata" in kwargs:
             del kwargs["metadata"]
-        capture_client_event("client.search", self, {"api_version": version, "keys": list(kwargs.keys())})
+        #capture_client_event("client.search", self, {"api_version": version, "keys": list(kwargs.keys())})
         return response.json()
 
     @api_error_handler
@@ -232,7 +232,7 @@ class MemoryClient:
         Returns:
             Dict[str, Any]: The response from the server.
         """
-        capture_client_event("client.update", self, {"memory_id": memory_id})
+        #capture_client_event("client.update", self, {"memory_id": memory_id})
         params = self._prepare_params()
         response = self.client.put(f"/v1/memories/{memory_id}/", json={"text": data}, params=params)
         response.raise_for_status()
@@ -254,7 +254,7 @@ class MemoryClient:
         params = self._prepare_params()
         response = self.client.delete(f"/v1/memories/{memory_id}/", params=params)
         response.raise_for_status()
-        capture_client_event("client.delete", self, {"memory_id": memory_id})
+        #capture_client_event("client.delete", self, {"memory_id": memory_id})
         return response.json()
 
     @api_error_handler
@@ -273,7 +273,7 @@ class MemoryClient:
         params = self._prepare_params(kwargs)
         response = self.client.delete("/v1/memories/", params=params)
         response.raise_for_status()
-        capture_client_event("client.delete_all", self, {"keys": list(kwargs.keys())})
+        #capture_client_event("client.delete_all", self, {"keys": list(kwargs.keys())})
         return response.json()
 
     @api_error_handler
@@ -292,7 +292,7 @@ class MemoryClient:
         params = self._prepare_params()
         response = self.client.get(f"/v1/memories/{memory_id}/history/", params=params)
         response.raise_for_status()
-        capture_client_event("client.history", self, {"memory_id": memory_id})
+        #capture_client_event("client.history", self, {"memory_id": memory_id})
         return response.json()
 
     @api_error_handler
@@ -301,7 +301,7 @@ class MemoryClient:
         params = self._prepare_params()
         response = self.client.get("/v1/entities/", params=params)
         response.raise_for_status()
-        capture_client_event("client.users", self)
+        #capture_client_event("client.users", self)
         return response.json()
 
     @api_error_handler
@@ -352,9 +352,9 @@ class MemoryClient:
             response = self.client.delete(f"/v1/entities/{entity['type']}/{entity['id']}/", params=params)
             response.raise_for_status()
 
-        capture_client_event(
-            "client.delete_users", self, {"user_id": user_id, "agent_id": agent_id, "app_id": app_id, "run_id": run_id}
-        )
+        #capture_client_event(
+        #     "client.delete_users", self, {"user_id": user_id, "agent_id": agent_id, "app_id": app_id, "run_id": run_id}
+        # )
         return {
             "message": "Entity deleted successfully."
             if (user_id or agent_id or app_id or run_id)
@@ -377,7 +377,7 @@ class MemoryClient:
         # This will also delete the memories
         self.delete_users()
 
-        capture_client_event("client.reset", self)
+        #capture_client_event("client.reset", self)
         return {"message": "Client reset successful. All users and memories deleted."}
 
     @api_error_handler
@@ -398,7 +398,7 @@ class MemoryClient:
         response = self.client.put("/v1/batch/", json={"memories": memories})
         response.raise_for_status()
 
-        capture_client_event("client.batch_update", self)
+        #capture_client_event("client.batch_update", self)
         return response.json()
 
     @api_error_handler
@@ -418,7 +418,7 @@ class MemoryClient:
         response = self.client.request("DELETE", "/v1/batch/", json={"memories": memories})
         response.raise_for_status()
 
-        capture_client_event("client.batch_delete", self)
+        #capture_client_event("client.batch_delete", self)
         return response.json()
 
     @api_error_handler
@@ -434,7 +434,7 @@ class MemoryClient:
         """
         response = self.client.post("/v1/exports/", json={"schema": schema, **self._prepare_params(kwargs)})
         response.raise_for_status()
-        capture_client_event("client.create_memory_export", self, {"schema": schema, "keys": list(kwargs.keys())})
+        #capture_client_event("client.create_memory_export", self, {"schema": schema, "keys": list(kwargs.keys())})
         return response.json()
 
     @api_error_handler
@@ -449,7 +449,7 @@ class MemoryClient:
         """
         response = self.client.get("/v1/exports/", params=self._prepare_params(kwargs))
         response.raise_for_status()
-        capture_client_event("client.get_memory_export", self, {"keys": list(kwargs.keys())})
+        #capture_client_event("client.get_memory_export", self, {"keys": list(kwargs.keys())})
         return response.json()
 
     @api_error_handler
@@ -475,7 +475,7 @@ class MemoryClient:
             params=params,
         )
         response.raise_for_status()
-        capture_client_event("client.get_project_details", self, {"fields": fields})
+        #capture_client_event("client.get_project_details", self, {"fields": fields})
         return response.json()
 
     @api_error_handler
@@ -511,11 +511,11 @@ class MemoryClient:
             json=payload,
         )
         response.raise_for_status()
-        capture_client_event(
-            "client.update_project",
-            self,
-            {"custom_instructions": custom_instructions, "custom_categories": custom_categories},
-        )
+        #capture_client_event(
+        #     "client.update_project",
+        #     self,
+        #     {"custom_instructions": custom_instructions, "custom_categories": custom_categories},
+        # )
         return response.json()
 
     def chat(self):
@@ -543,7 +543,7 @@ class MemoryClient:
 
         response = self.client.get(f"api/v1/webhooks/projects/{project_id}/")
         response.raise_for_status()
-        capture_client_event("client.get_webhook", self)
+        #capture_client_event("client.get_webhook", self)
         return response.json()
 
     @api_error_handler
@@ -566,7 +566,7 @@ class MemoryClient:
         payload = {"url": url, "name": name, "event_types": event_types}
         response = self.client.post(f"api/v1/webhooks/projects/{project_id}/", json=payload)
         response.raise_for_status()
-        capture_client_event("client.create_webhook", self)
+        #capture_client_event("client.create_webhook", self)
         return response.json()
 
     @api_error_handler
@@ -595,7 +595,7 @@ class MemoryClient:
         payload = {k: v for k, v in {"name": name, "url": url, "event_types": event_types}.items() if v is not None}
         response = self.client.put(f"api/v1/webhooks/{webhook_id}/", json=payload)
         response.raise_for_status()
-        capture_client_event("client.update_webhook", self, {"webhook_id": webhook_id})
+        #capture_client_event("client.update_webhook", self, {"webhook_id": webhook_id})
         return response.json()
 
     @api_error_handler
@@ -614,7 +614,7 @@ class MemoryClient:
 
         response = self.client.delete(f"api/v1/webhooks/{webhook_id}/")
         response.raise_for_status()
-        capture_client_event("client.delete_webhook", self, {"webhook_id": webhook_id})
+        #capture_client_event("client.delete_webhook", self, {"webhook_id": webhook_id})
         return response.json()
 
     def _prepare_payload(
@@ -703,7 +703,7 @@ class AsyncMemoryClient:
         response.raise_for_status()
         if "metadata" in kwargs:
             del kwargs["metadata"]
-        capture_client_event("async_client.add", self.sync_client, {"keys": list(kwargs.keys())})
+        #capture_client_event("async_client.add", self.sync_client, {"keys": list(kwargs.keys())})
         return response.json()
 
     @api_error_handler
@@ -711,7 +711,7 @@ class AsyncMemoryClient:
         params = self.sync_client._prepare_params()
         response = await self.async_client.get(f"/v1/memories/{memory_id}/", params=params)
         response.raise_for_status()
-        capture_client_event("async_client.get", self.sync_client, {"memory_id": memory_id})
+        #capture_client_event("async_client.get", self.sync_client, {"memory_id": memory_id})
         return response.json()
 
     @api_error_handler
@@ -724,9 +724,9 @@ class AsyncMemoryClient:
         response.raise_for_status()
         if "metadata" in kwargs:
             del kwargs["metadata"]
-        capture_client_event(
-            "async_client.get_all", self.sync_client, {"api_version": version, "keys": list(kwargs.keys())}
-        )
+        #capture_client_event(
+        #     "async_client.get_all", self.sync_client, {"api_version": version, "keys": list(kwargs.keys())}
+        # )
         return response.json()
 
     @api_error_handler
@@ -737,9 +737,9 @@ class AsyncMemoryClient:
         response.raise_for_status()
         if "metadata" in kwargs:
             del kwargs["metadata"]
-        capture_client_event(
-            "async_client.search", self.sync_client, {"api_version": version, "keys": list(kwargs.keys())}
-        )
+        #capture_client_event(
+        #     "async_client.search", self.sync_client, {"api_version": version, "keys": list(kwargs.keys())}
+        # )
         return response.json()
 
     @api_error_handler
@@ -747,7 +747,7 @@ class AsyncMemoryClient:
         params = self.sync_client._prepare_params()
         response = await self.async_client.put(f"/v1/memories/{memory_id}/", json={"text": data}, params=params)
         response.raise_for_status()
-        capture_client_event("async_client.update", self.sync_client, {"memory_id": memory_id})
+        #capture_client_event("async_client.update", self.sync_client, {"memory_id": memory_id})
         return response.json()
 
     @api_error_handler
@@ -755,7 +755,7 @@ class AsyncMemoryClient:
         params = self.sync_client._prepare_params()
         response = await self.async_client.delete(f"/v1/memories/{memory_id}/", params=params)
         response.raise_for_status()
-        capture_client_event("async_client.delete", self.sync_client, {"memory_id": memory_id})
+        #capture_client_event("async_client.delete", self.sync_client, {"memory_id": memory_id})
         return response.json()
 
     @api_error_handler
@@ -763,7 +763,7 @@ class AsyncMemoryClient:
         params = self.sync_client._prepare_params(kwargs)
         response = await self.async_client.delete("/v1/memories/", params=params)
         response.raise_for_status()
-        capture_client_event("async_client.delete_all", self.sync_client, {"keys": list(kwargs.keys())})
+        #capture_client_event("async_client.delete_all", self.sync_client, {"keys": list(kwargs.keys())})
         return response.json()
 
     @api_error_handler
@@ -771,7 +771,7 @@ class AsyncMemoryClient:
         params = self.sync_client._prepare_params()
         response = await self.async_client.get(f"/v1/memories/{memory_id}/history/", params=params)
         response.raise_for_status()
-        capture_client_event("async_client.history", self.sync_client, {"memory_id": memory_id})
+        #capture_client_event("async_client.history", self.sync_client, {"memory_id": memory_id})
         return response.json()
 
     @api_error_handler
@@ -779,7 +779,7 @@ class AsyncMemoryClient:
         params = self.sync_client._prepare_params()
         response = await self.async_client.get("/v1/entities/", params=params)
         response.raise_for_status()
-        capture_client_event("async_client.users", self.sync_client)
+        #capture_client_event("async_client.users", self.sync_client)
         return response.json()
 
     @api_error_handler
@@ -830,7 +830,7 @@ class AsyncMemoryClient:
             response = await self.async_client.delete(f"/v1/entities/{entity['type']}/{entity['id']}/", params=params)
             response.raise_for_status()
 
-        capture_client_event("async_client.delete_users", self.sync_client)
+        #capture_client_event("async_client.delete_users", self.sync_client)
         return {
             "message": "Entity deleted successfully."
             if (user_id or agent_id or app_id or run_id)
@@ -840,7 +840,7 @@ class AsyncMemoryClient:
     @api_error_handler
     async def reset(self) -> Dict[str, str]:
         await self.delete_users()
-        capture_client_event("async_client.reset", self.sync_client)
+        #capture_client_event("async_client.reset", self.sync_client)
         return {"message": "Client reset successful. All users and memories deleted."}
 
     @api_error_handler
@@ -861,7 +861,7 @@ class AsyncMemoryClient:
         response = await self.async_client.put("/v1/batch/", json={"memories": memories})
         response.raise_for_status()
 
-        capture_client_event("async_client.batch_update", self.sync_client)
+        #capture_client_event("async_client.batch_update", self.sync_client)
         return response.json()
 
     @api_error_handler
@@ -881,7 +881,7 @@ class AsyncMemoryClient:
         response = await self.async_client.request("DELETE", "/v1/batch/", json={"memories": memories})
         response.raise_for_status()
 
-        capture_client_event("async_client.batch_delete", self.sync_client)
+        #capture_client_event("async_client.batch_delete", self.sync_client)
         return response.json()
 
     @api_error_handler
@@ -897,9 +897,9 @@ class AsyncMemoryClient:
         """
         response = await self.async_client.post("/v1/exports/", json={"schema": schema, **self._prepare_params(kwargs)})
         response.raise_for_status()
-        capture_client_event(
-            "async_client.create_memory_export", self.sync_client, {"schema": schema, "keys": list(kwargs.keys())}
-        )
+        #capture_client_event(
+        #     "async_client.create_memory_export", self.sync_client, {"schema": schema, "keys": list(kwargs.keys())}
+        # )
         return response.json()
 
     @api_error_handler
@@ -914,7 +914,7 @@ class AsyncMemoryClient:
         """
         response = await self.async_client.get("/v1/exports/", params=self._prepare_params(kwargs))
         response.raise_for_status()
-        capture_client_event("async_client.get_memory_export", self.sync_client, {"keys": list(kwargs.keys())})
+        #capture_client_event("async_client.get_memory_export", self.sync_client, {"keys": list(kwargs.keys())})
         return response.json()
 
     @api_error_handler
@@ -928,7 +928,7 @@ class AsyncMemoryClient:
             params=params,
         )
         response.raise_for_status()
-        capture_client_event("async_client.get_project", self.sync_client, {"fields": fields})
+        #capture_client_event("async_client.get_project", self.sync_client, {"fields": fields})
         return response.json()
 
     @api_error_handler
@@ -951,11 +951,11 @@ class AsyncMemoryClient:
             json=payload,
         )
         response.raise_for_status()
-        capture_client_event(
-            "async_client.update_project",
-            self.sync_client,
-            {"custom_instructions": custom_instructions, "custom_categories": custom_categories},
-        )
+        #capture_client_event(
+        #     "async_client.update_project",
+        #     self.sync_client,
+        #     {"custom_instructions": custom_instructions, "custom_categories": custom_categories},
+        # )
         return response.json()
 
     async def chat(self):
@@ -967,7 +967,7 @@ class AsyncMemoryClient:
             f"api/v1/webhooks/projects/{project_id}/",
         )
         response.raise_for_status()
-        capture_client_event("async_client.get_webhook", self.sync_client)
+        #capture_client_event("async_client.get_webhook", self.sync_client)
         return response.json()
 
     @api_error_handler
@@ -975,7 +975,7 @@ class AsyncMemoryClient:
         payload = {"url": url, "name": name, "event_types": event_types}
         response = await self.async_client.post(f"api/v1/webhooks/projects/{project_id}/", json=payload)
         response.raise_for_status()
-        capture_client_event("async_client.create_webhook", self.sync_client)
+        #capture_client_event("async_client.create_webhook", self.sync_client)
         return response.json()
 
     @api_error_handler
@@ -989,12 +989,12 @@ class AsyncMemoryClient:
         payload = {k: v for k, v in {"name": name, "url": url, "event_types": event_types}.items() if v is not None}
         response = await self.async_client.put(f"api/v1/webhooks/{webhook_id}/", json=payload)
         response.raise_for_status()
-        capture_client_event("async_client.update_webhook", self.sync_client, {"webhook_id": webhook_id})
+        #capture_client_event("async_client.update_webhook", self.sync_client, {"webhook_id": webhook_id})
         return response.json()
 
     @api_error_handler
     async def delete_webhook(self, webhook_id: int) -> Dict[str, str]:
         response = await self.async_client.delete(f"api/v1/webhooks/{webhook_id}/")
         response.raise_for_status()
-        capture_client_event("async_client.delete_webhook", self.sync_client, {"webhook_id": webhook_id})
+        #capture_client_event("async_client.delete_webhook", self.sync_client, {"webhook_id": webhook_id})
         return response.json()

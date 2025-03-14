@@ -18,6 +18,8 @@ class BaseEmbedderConfig(ABC):
         embedding_dims: Optional[int] = None,
         # Ollama specific
         ollama_base_url: Optional[str] = None,
+        # llama cpp specific
+        llama_cpp_base_url: Optional[str] = None,
         # Openai specific
         openai_base_url: Optional[str] = None,
         # Huggingface specific
@@ -42,6 +44,8 @@ class BaseEmbedderConfig(ABC):
         :type embedding_dims: Optional[int], optional
         :param ollama_base_url: Base URL for the Ollama API, defaults to None
         :type ollama_base_url: Optional[str], optional
+        :param llama_cpp_base_url: The base URL of the LLM, defaults to None
+        :type llama_cpp_base_url: Optional[str], optional
         :param model_kwargs: key-value arguments for the huggingface embedding model, defaults a dict inside init
         :type model_kwargs: Optional[Dict[str, Any]], defaults a dict inside init
         :param openai_base_url: Openai base URL to be use, defaults to "https://api.openai.com/v1"
@@ -69,6 +73,9 @@ class BaseEmbedderConfig(ABC):
         self.http_client = httpx.Client(proxies=http_client_proxies) if http_client_proxies else None
 
         # Ollama specific
+        self.ollama_base_url = ollama_base_url
+        
+        #llama cpp specific
         self.ollama_base_url = ollama_base_url
 
         # Huggingface specific
