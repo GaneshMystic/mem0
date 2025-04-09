@@ -71,13 +71,39 @@ Here's an example schema for extracting professional profile information:
 
 ### Submit Export Job
 
+You can optionally provide additional instructions to guide how memories are processed and structured during export using the `export_instructions` parameter.
+
 <CodeGroup>
 
 ```python Python
+# Basic export request
 response = client.create_memory_export(
     schema=json_schema,
-    user_id="user123"
+    user_id="alice"
 )
+
+# Export with custom instructions
+export_instructions = """
+1. Create a comprehensive profile with detailed information in each category
+2. Only mark fields as "None" when absolutely no relevant information exists
+3. Base all information directly on the user's memories
+4. When contradictions exist, prioritize the most recent information
+5. Clearly distinguish between factual statements and inferences
+"""
+
+# For create operation, using only user_id filter as requested
+filters = {
+    "AND": [
+        {"user_id": "alex"}
+    ]
+}
+
+response = client.create_memory_export(
+    schema=json_schema,
+    filters=filters,
+    export_instructions=export_instructions  # Optional
+)
+
 print(response)
 ```
 
@@ -87,7 +113,8 @@ curl -X POST "https://api.mem0.ai/v1/memories/export/" \
      -H "Content-Type: application/json" \
      -d '{
          "schema": {json_schema},
-         "user_id": "user123"
+         "user_id": "alice",
+         "export_instructions": "1. Create a comprehensive profile with detailed information\n2. Only mark fields as \"None\" when absolutely no relevant information exists"
      }'
 ```
 
@@ -107,12 +134,20 @@ Once the export job is complete, you can retrieve the structured data:
 <CodeGroup>
 
 ```python Python
-response = client.get_memory_export(user_id="user123")
+# Corrected date range (assuming you meant July 10 to July 20)
+filters = {
+    "AND": [
+        {"created_at": {"gte": "2024-07-10", "lte": "2024-07-20"}},
+        {"user_id": "alex"}
+    ]
+}
+
+response = client.get_memory_export(filters=filters)
 print(response)
 ```
 
 ```bash cURL
-curl -X GET "https://api.mem0.ai/v1/memories/export/?user_id=user123" \
+curl -X GET "https://api.mem0.ai/v1/memories/export/?user_id=alice" \
      -H "Authorization: Token your-api-key"
 ```
 
@@ -137,6 +172,7 @@ You can apply various filters to customize which memories are included in the ex
 - `agent_id`: Filter memories by specific agent
 - `run_id`: Filter memories by specific run
 - `session_id`: Filter memories by specific session
+- `created_at`: Filter memories by date
 
 <Note>
 The export process may take some time to complete, especially when dealing with a large number of memories or complex schemas.

@@ -6,8 +6,8 @@ from typing import Any, Dict, List, Optional, Union
 
 import httpx
 
-from mem0.memory.setup import setup_config, get_user_id
-# from mem0.memory.telemetry import capture_client_event
+from mem0.memory.setup import get_user_id, setup_config
+from mem0.memory.telemetry import capture_client_event
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +110,7 @@ class MemoryClient:
             try:
                 error_data = e.response.json()
                 error_message = error_data.get("detail", str(e))
-            except:
+            except Exception:
                 error_message = str(e)
             raise ValueError(f"Error: {error_message}")
 
@@ -130,13 +130,14 @@ class MemoryClient:
         """
         kwargs = self._prepare_params(kwargs)
         if kwargs.get("output_format") != "v1.1":
+            kwargs["output_format"] = "v1.1"
             warnings.warn(
-                "Using default output format 'v1.0' is deprecated and will be removed in version 0.1.70. "
-                "Please use output_format='v1.1' for enhanced memory details. "
+                "output_format='v1.0' is deprecated therefore setting it to 'v1.1' by default."
                 "Check out the docs for more information: https://docs.mem0.ai/platform/quickstart#4-1-create-memories",
                 DeprecationWarning,
                 stacklevel=2,
             )
+        kwargs["version"] = "v2"
         payload = self._prepare_payload(messages, kwargs)
         response = self.client.post("/v1/memories/", json=payload)
         response.raise_for_status()
@@ -447,7 +448,7 @@ class MemoryClient:
         Returns:
             Dict containing the exported data
         """
-        response = self.client.get("/v1/exports/", params=self._prepare_params(kwargs))
+        response = self.client.post("/v1/exports/get/", json=self._prepare_params(kwargs))
         response.raise_for_status()
         #capture_client_event("client.get_memory_export", self, {"keys": list(kwargs.keys())})
         return response.json()
@@ -615,6 +616,23 @@ class MemoryClient:
         response = self.client.delete(f"api/v1/webhooks/{webhook_id}/")
         response.raise_for_status()
         #capture_client_event("client.delete_webhook", self, {"webhook_id": webhook_id})
+        return response.json()
+
+    @api_error_handler
+    def feedback(
+        self, memory_id: str, feedback: Optional[str] = None, feedback_reason: Optional[str] = None
+    ) -> Dict[str, str]:
+        VALID_FEEDBACK_VALUES = {"POSITIVE", "NEGATIVE", "VERY_NEGATIVE"}
+
+        feedback = feedback.upper() if feedback else None
+        if feedback is not None and feedback not in VALID_FEEDBACK_VALUES:
+            raise ValueError(f'feedback must be one of {", ".join(VALID_FEEDBACK_VALUES)} or None')
+
+        data = {"memory_id": memory_id, "feedback": feedback, "feedback_reason": feedback_reason}
+
+        response = self.client.post("/v1/feedback/", json=data)
+        response.raise_for_status()
+        capture_client_event("client.feedback", self, data)
         return response.json()
 
     def _prepare_payload(
@@ -912,7 +930,7 @@ class AsyncMemoryClient:
         Returns:
             Dict containing the exported data
         """
-        response = await self.async_client.get("/v1/exports/", params=self._prepare_params(kwargs))
+        response = await self.async_client.post("/v1/exports/get/", json=self._prepare_params(kwargs))
         response.raise_for_status()
         #capture_client_event("async_client.get_memory_export", self.sync_client, {"keys": list(kwargs.keys())})
         return response.json()
@@ -997,4 +1015,21 @@ class AsyncMemoryClient:
         response = await self.async_client.delete(f"api/v1/webhooks/{webhook_id}/")
         response.raise_for_status()
         #capture_client_event("async_client.delete_webhook", self.sync_client, {"webhook_id": webhook_id})
+        return response.json()
+
+    @api_error_handler
+    async def feedback(
+        self, memory_id: str, feedback: Optional[str] = None, feedback_reason: Optional[str] = None
+    ) -> Dict[str, str]:
+        VALID_FEEDBACK_VALUES = {"POSITIVE", "NEGATIVE", "VERY_NEGATIVE"}
+
+        feedback = feedback.upper() if feedback else None
+        if feedback is not None and feedback not in VALID_FEEDBACK_VALUES:
+            raise ValueError(f'feedback must be one of {", ".join(VALID_FEEDBACK_VALUES)} or None')
+
+        data = {"memory_id": memory_id, "feedback": feedback, "feedback_reason": feedback_reason}
+
+        response = await self.async_client.post("/v1/feedback/", json=data)
+        response.raise_for_status()
+        capture_client_event("async_client.feedback", self.sync_client, data)
         return response.json()
